@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="widget-name" content="In-N-Out HQ Updates">
+    <meta name="widget-description" content="Store manager portal with HQ campaign briefings and menu updates">
+    <title>In-N-Out HQ Updates</title>
+    <style>
+        :root {
+            /* In-N-Out Brand Colors */
+            --primary: #E31837; /* In-N-Out Red */
+            --warning: #FFD200; /* In-N-Out Yellow */
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #1f2937;
+            --text-light: #4b5563;
+            --bg: #ffffff;
+            --bg-gray: #f4f4f5;
+            --border: #e5e7eb;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #E31837;
+                --warning: #FFD200;
+                --success: #34d399;
+                --danger: #f87171;
+                --text: #f3f4f6;
+                --text-light: #d1d5db;
+                --bg: #1f2937;
+                --bg-gray: #111827;
+                --border: #374151;
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-gray);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .cw-header {
+            background: var(--bg);
+            border-bottom: 2px solid var(--warning);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .cw-wordmark {
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+        .cw-header-title {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .cw-container {
+            max-width: 1100px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+
+        .cw-welcome-banner {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            border-bottom: 4px solid var(--warning);
+        }
+        .cw-welcome-banner h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .cw-welcome-banner span {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        .cw-section-title {
+            color: var(--text);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .cw-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .cw-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .cw-card.pricing-card { border-left-color: var(--warning); }
+
+        .card-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 0.75rem;
+        }
+        .card-date {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            background: var(--bg-gray);
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .cw-card h3 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        .cw-card p.summary {
+            color: var(--text-light);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .cw-btn {
+            padding: 0.6rem 1.1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+            transition: opacity 0.15s;
+        }
+        .cw-btn:hover { opacity: 0.9; }
+        .cw-btn-primary { background: var(--primary); color: white; }
+        .cw-btn-warning { background: var(--warning); color: #111827; }
+
+        .cw-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .cw-modal-overlay.active { display: flex; }
+
+        .cw-modal {
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cw-modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            border-bottom: 3px solid var(--warning);
+        }
+        .cw-modal-header.warning-modal { 
+            background: var(--warning); 
+            color: #111827;
+            border-bottom: 3px solid var(--primary);
+        }
+        .cw-modal-header h3 { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; }
+
+        .cw-close-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 1.75rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 0.25rem;
+        }
+
+        .cw-modal-body {
+            padding: 1.25rem 1.5rem;
+            line-height: 1.6;
+            overflow-y: auto;
+            font-size: 0.95rem;
+        }
+        .cw-modal-body ul {
+            margin-top: 0.75rem;
+            margin-left: 1.25rem;
+        }
+        .cw-modal-body li { margin-bottom: 0.5rem; }
+        .cw-modal-body strong { color: var(--text); font-weight: 700; }
+        .cw-modal-body p { color: var(--text-light); }
+
+        .cw-action-items {
+            margin-top: 1.25rem;
+            background: var(--bg-gray);
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+            font-size: 0.95rem;
+        }
+        .warning-modal .cw-action-items {
+            border-left: 4px solid var(--warning);
+        }
+        .cw-action-items strong {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: var(--text);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="cw-header">
+        <div class="cw-wordmark">In-N-Out Burger HQ</div>
+        <div class="cw-header-title" data-i18n="headerTitle">Store Manager Portal — HQ Updates</div>
+    </header>
+
+    <div class="cw-container">
+        <div class="cw-welcome-banner">
+            <h2 data-i18n="welcome">Welcome, Store Manager</h2>
+            <span id="current-date"></span>
+        </div>
+
+        <div class="dashboard-grid">
+            <div>
+                <h2 class="cw-section-title" data-i18n="sectionCampaigns">Campaigns & Merchandising</h2>
+                <div id="campaigns-container"></div>
+            </div>
+            <div>
+                <h2 class="cw-section-title" data-i18n="sectionPricing">Menu & Pricing Updates</h2>
+                <div id="pricing-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cw-modal-overlay" id="info-modal">
+        <div class="cw-modal">
+            <div class="cw-modal-header" id="modal-header">
+                <h3 id="modal-title">Update Title</h3>
+                <button class="cw-close-btn" id="modal-close">&times;</button>
+            </div>
+            <div class="cw-modal-body">
+                <div id="modal-content"></div>
+                <div class="cw-action-items">
+                    <strong data-i18n="actionRequired">Manager Action Required:</strong>
+                    <p id="modal-action"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // — Language detection —
+        const LANG = (() => {
+            const l = navigator.language || '';
+            if (l.startsWith('es')) return 'es';
+            return 'en-US';
+        })();
+        document.documentElement.lang = LANG;
+
+        const LOCALE = {
+            'es': 'es-ES', 'en-US': 'en-US'
+        }[LANG] || 'en-US';
+
+        const CURRENCY = 'USD'; // In-N-Out uses USD generally
+
+        const longDateFormatter = new Intl.DateTimeFormat(LOCALE, {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        const shortDateFormatter = new Intl.DateTimeFormat(LOCALE, {
+            year: 'numeric', month: 'short', day: 'numeric'
+        });
+        const currencyFormatter = new Intl.NumberFormat(LOCALE, {
+            style: 'currency', currency: CURRENCY
+        });
+
+        const LANG_SUFFIX = {
+            'es': 'Es', 'en-US': ''
+        };
+        function loc(obj, key) {
+            const suffix = LANG_SUFFIX[LANG] || '';
+            return (suffix ? obj[key + suffix] : undefined) || obj[key];
+        }
+
+        // — Translations —
+        const T = {
+            es: {
+                headerTitle: 'Portal del Gerente de Tienda — Actualizaciones HQ',
+                welcome: 'Bienvenido, Gerente de Tienda',
+                sectionCampaigns: 'Campañas y Mercancía',
+                sectionPricing: 'Actualizaciones de Menú y Precios',
+                viewBriefing: 'Ver Detalles',
+                viewPricing: 'Ver Menú',
+                actionRequired: 'Acción Requerida del Gerente:'
+            },
+            'en-US': {
+                headerTitle: 'Store Manager Portal — HQ Updates',
+                welcome: 'Welcome, Store Manager',
+                sectionCampaigns: 'Campaigns & Merchandising',
+                sectionPricing: 'Menu & Pricing Updates',
+                viewBriefing: 'View Briefing',
+                viewPricing: 'View Details',
+                actionRequired: 'Manager Action Required:'
+            }
+        };
+        const t = T[LANG] ?? T['en-US'];
+
+        function getRelativeDate(daysOffset) {
+            const d = new Date();
+            d.setDate(d.getDate() + daysOffset);
+            return shortDateFormatter.format(d);
+        }
+
+        // — Data —
+        const hqUpdates = {
+            campaigns: [
+                {
+                    id: 'c1',
+                    dateOffset: 0,
+                    title: 'Summer Drive-Thru Efficiency',
+                    titleEs: 'Eficiencia de Drive-Thru en Verano',
+                    summary: 'As summer road trips begin, focus on Drive-Thru speed and Quality You Can Taste. Ensure fresh lemonade is prepped.',
+                    summaryEs: 'Con el inicio de los viajes de verano, enfóquese en la velocidad del Drive-Thru y nuestra calidad. Asegure la preparación de limonada fresca.',
+                    details: `
+                        <p>Summer is our busiest season. The <strong>Summer Drive-Thru Efficiency</strong> initiative ensures we maintain our high standards while handling increased volume.</p>
+                        <ul>
+                            <li><strong>Hand-held ordering:</strong> Deploy associates with tablets outside during peak hours (11:30 AM - 1:30 PM).</li>
+                            <li><strong>Lemonade prep:</strong> Increase fresh lemon squeezing frequency to maintain supply.</li>
+                            <li><strong>Smile & Service:</strong> Remind associates that speed never compromises a genuine smile.</li>
+                        </ul>
+                    `,
+                    detailsEs: `
+                        <p>El verano es nuestra temporada más alta. La iniciativa de <strong>Eficiencia de Drive-Thru</strong> asegura que mantengamos nuestros altos estándares durante el aumento de volumen.</p>
+                        <ul>
+                            <li><strong>Toma de pedidos afuera:</strong> Asigne asociados con tabletas afuera durante horas pico (11:30 AM - 1:30 PM).</li>
+                            <li><strong>Preparación de limonada:</strong> Aumente la frecuencia de exprimido de limones frescos.</li>
+                            <li><strong>Servicio con sonrisa:</strong> Recuerde a los asociados que la velocidad nunca compromete una sonrisa genuina.</li>
+                        </ul>
+                    `,
+                    action: 'Schedule hand-held tablet training for new associates by Sunday. Review peak-hour staffing.',
+                    actionEs: 'Programe capacitación de tabletas para nuevos asociados antes del domingo. Revise el personal en horas pico.'
+                },
+                {
+                    id: 'c2',
+                    dateOffset: -3,
+                    title: '2026 Collector T-Shirt Launch',
+                    titleEs: 'Lanzamiento de Camiseta Coleccionable 2026',
+                    summary: 'The new 2026 Collector Edition T-Shirts are arriving. Set up the display case and brief associates on sizing.',
+                    summaryEs: 'Llegan las nuevas camisetas de edición 2026. Prepare la vitrina y oriente a los asociados sobre las tallas.',
+                    details: `
+                        <p>The highly anticipated <strong>2026 Classic T-Shirt</strong> features a retro 1950s store design.</p>
+                        <ul>
+                            <li>Merchandise display boxes should be updated overnight.</li>
+                            <li>Ensure all sizes (Youth S to Adult XXL) are accounted for in the backroom inventory.</li>
+                            <li>Associates may wear the new shirt on launch day.</li>
+                        </ul>
+                    `,
+                    detailsEs: `
+                        <p>La muy esperada <strong>Camiseta Clásica 2026</strong> presenta un diseño retro de las tiendas de los años 50.</p>
+                        <ul>
+                            <li>Las cajas de exhibición de mercancía deben actualizarse esta noche.</li>
+                            <li>Asegúrese de contar con todas las tallas (Youth S a Adult XXL) en el inventario.</li>
+                            <li>Los asociados pueden usar la nueva camiseta en el día de lanzamiento.</li>
+                        </ul>
+                    `,
+                    action: 'Update the merchandise display case and audit backroom apparel inventory.',
+                    actionEs: 'Actualice la vitrina de mercancía y audite el inventario de ropa en el almacén.'
+                }
+            ],
+            pricing: [
+                {
+                    id: 'p1',
+                    dateOffset: -1,
+                    title: 'Menu Board Price Adjustments',
+                    titleEs: 'Ajustes de Precios en el Menú',
+                    summary: 'Minor price adjustments on the Double-Double and French Fries due to rising produce and beef costs.',
+                    summaryEs: 'Ajustes menores de precio en la Double-Double y Papas Fritas debido al aumento en los costos de carne y vegetales.',
+                    details: `
+                        <p>To maintain our commitment to the freshest ingredients without compromising quality, we are adjusting prices slightly.</p>
+                        <ul>
+                            <li><strong>Double-Double:</strong> from {oldA} to {newA}</li>
+                            <li><strong>French Fries:</strong> from {oldB} to {newB}</li>
+                            <li>New drive-thru and front-counter menu board inserts will be delivered by Thursday.</li>
+                        </ul>
+                    `,
+                    detailsEs: `
+                        <p>Para mantener nuestro compromiso con los ingredientes más frescos sin comprometer la calidad, estamos ajustando los precios ligeramente.</p>
+                        <ul>
+                            <li><strong>Double-Double:</strong> de {oldA} a {newA}</li>
+                            <li><strong>Papas Fritas:</strong> de {oldB} a {newB}</li>
+                            <li>Los nuevos insertos para los menús del mostrador y drive-thru se entregarán el jueves.</li>
+                        </ul>
+                    `,
+                    pricing: { oldA: 5.90, newA: 6.10, oldB: 2.30, newB: 2.45 },
+                    action: 'Swap the menu board inserts after closing on Thursday. Ensure the POS syncs overnight.',
+                    actionEs: 'Cambie los insertos del menú después del cierre el jueves. Asegúrese de que el sistema POS se sincronice durante la noche.'
+                },
+                {
+                    id: 'p2',
+                    dateOffset: -5,
+                    title: 'Not-So-Secret Menu POS Update',
+                    titleEs: 'Actualización de POS - Menú No Tan Secreto',
+                    summary: 'New POS buttons added for "Flying Dutchman" and "Animal Style" customizations to improve inventory tracking.',
+                    summaryEs: 'Nuevos botones en el POS para "Flying Dutchman" y personalizaciones "Animal Style" para mejorar el inventario.',
+                    details: `
+                        <p>We are updating the POS system to better track our Not-So-Secret Menu items.</p>
+                        <ul>
+                            <li>There is no price change, but associates must now use the dedicated <strong>Flying Dutchman</strong> button rather than modifying a standard burger.</li>
+                            <li>Animal Style fries now have a direct one-touch button on the main order screen.</li>
+                        </ul>
+                    `,
+                    detailsEs: `
+                        <p>Estamos actualizando el sistema POS para rastrear mejor nuestros artículos del Menú No Tan Secreto.</p>
+                        <ul>
+                            <li>No hay cambio de precio, pero los asociados ahora deben usar el botón dedicado para el <strong>Flying Dutchman</strong> en lugar de modificar una hamburguesa.</li>
+                            <li>Las papas Animal Style ahora tienen un botón directo en la pantalla principal.</li>
+                        </ul>
+                    `,
+                    action: 'Brief all order-takers on the new POS layout before their next shift.',
+                    actionEs: 'Instruya a todos los tomadores de pedidos sobre el nuevo diseño del POS antes de su próximo turno.'
+                }
+            ]
+        };
+
+        // — Rendering —
+        function fillPricingTokens(text, item) {
+            if (!item.pricing) return text;
+            const p = item.pricing;
+            return text
+                .replaceAll('{oldA}', p.oldA !== undefined ? currencyFormatter.format(p.oldA) : '')
+                .replaceAll('{newA}', p.newA !== undefined ? currencyFormatter.format(p.newA) : '')
+                .replaceAll('{oldB}', p.oldB !== undefined ? currencyFormatter.format(p.oldB) : '')
+                .replaceAll('{newB}', p.newB !== undefined ? currencyFormatter.format(p.newB) : '');
+        }
+
+        function renderCards() {
+            const campaignsContainer = document.getElementById('campaigns-container');
+            const pricingContainer   = document.getElementById('pricing-container');
+
+            campaignsContainer.innerHTML = hqUpdates.campaigns.map(item => `
+                <div class="cw-card">
+                    <div class="card-header">
+                        <span class="card-date">${getRelativeDate(item.dateOffset)}</span>
+                    </div>
+                    <h3>${loc(item, 'title')}</h3>
+                    <p class="summary">${loc(item, 'summary')}</p>
+                    <button class="cw-btn cw-btn-primary" data-cat="campaigns" data-id="${item.id}">${t.viewBriefing}</button>
+                </div>
+            `).join('');
+
+            pricingContainer.innerHTML = hqUpdates.pricing.map(item => `
+                <div class="cw-card pricing-card">
+                    <div class="card-header">
+                        <span class="card-date">${getRelativeDate(item.dateOffset)}</span>
+                    </div>
+                    <h3>${loc(item, 'title')}</h3>
+                    <p class="summary">${fillPricingTokens(loc(item, 'summary'), item)}</p>
+                    <button class="cw-btn cw-btn-warning" data-cat="pricing" data-id="${item.id}">${t.viewPricing}</button>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('[data-cat]').forEach(btn => {
+                btn.addEventListener('click', () => openModal(btn.dataset.cat, btn.dataset.id));
+            });
+        }
+
+        // — Modal —
+        const modalOverlay = document.getElementById('info-modal');
+        const modalHeader  = document.getElementById('modal-header');
+        const modalTitle   = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalAction  = document.getElementById('modal-action');
+
+        function openModal(category, id) {
+            const data = hqUpdates[category].find(item => item.id === id);
+            if (!data) return;
+            modalTitle.textContent = loc(data, 'title');
+            modalContent.innerHTML = fillPricingTokens(loc(data, 'details'), data);
+            modalAction.textContent = loc(data, 'action');
+            modalHeader.classList.toggle('warning-modal', category === 'pricing');
+            modalOverlay.classList.add('active');
+        }
+        function closeModal() { modalOverlay.classList.remove('active'); }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (t[key] !== undefined) el.textContent = t[key];
+            });
+        }
+
+        function init() {
+            applyTranslations();
+            document.getElementById('current-date').textContent = longDateFormatter.format(new Date());
+            renderCards();
+            document.getElementById('modal-close').addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', e => {
+                if (e.target === modalOverlay) closeModal();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
